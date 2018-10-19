@@ -3,6 +3,7 @@
 |  =========================================================*/
 
 const SHA256 = require('crypto-js/sha256');
+var level = require('./levelSandbox');
 
 
 /* ===== Block Class ==============================
@@ -96,3 +97,4 @@ class Blockchain{
       }
     }
 }
+level.addDataToLevelDB('Testing data');
