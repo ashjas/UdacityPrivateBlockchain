@@ -26,7 +26,7 @@ module.exports = {
         return new Promise(function (resolve,reject) {
         db.get(key, function(err, value) {
             if (err) return console.log('Not found!', err);
-            console.log('Value = ' + value);
+            //console.log('Value = ' + value);
             resolve(value);
         })
         });
@@ -61,13 +61,15 @@ module.exports = {
     printChain : function printChain() {
         let i = 0;
         console.log('Printing Chain Data:');
-        console.log('Chain Height: ' + module.exports.getChainHeight());
+        console.log('--------------------');
+        //console.log('Chain Height: ' + module.exports.getChainHeight());
         db.createReadStream().on('data', function(data) {
-            let block = data.value;
-            console.log('Block height: ' + block.height);
-            console.log('Block hash: ' + block.hash);
-            console.log('Block previousBlockHash: ' + block.previousBlockHash);
-            console.log('Block body: ' + block.body);
+            let json = JSON.parse(data.value);
+            console.log('');
+            console.log('Block height: ' + json['height']);
+            console.log('Block hash: ' + json['hash']);
+            console.log('Block previousBlockHash: ' + json['previousBlockHash']);
+            console.log('Block body: ' + json['body']);
             i++;
         }).on('error', function(err) {
             return console.log('Unable to read data stream!', err)

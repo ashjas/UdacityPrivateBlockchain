@@ -31,89 +31,107 @@ class Blockchain{
     // Add new block
     addBlock(newBlock){
         // add the genesis Block if chain is empty, before adding a new block.
-
-        level.getChainHeight().then(height => { return height;}).then( function(height){
-            console.log('Height:' + height);
-            if(height === -1 ) {// add a genesis block.
-                console.log('adding the Genesis block.' );
-                var genesisBlock = new Block('Genesis Block');
-                // UTC timestamp
-                genesisBlock.time = new Date().getTime().toString().slice(0,-3);
-                // Block hash with SHA256 using Block and converting to a string
-                genesisBlock.hash = SHA256(JSON.stringify(genesisBlock)).toString();
-                // Adding block object to chain
-                level.addDataToChain(JSON.stringify(genesisBlock).toString()).then(() => {
+        return new Promise(function (resolve) {
+            level.getChainHeight().then(height => { return height;}).then( function(height){
+                console.log('Height:' + height);
+                if(height === -1 ) {// add a genesis block.
+                    console.log('adding the Genesis block.' );
+                    var genesisBlock = new Block('Genesis Block');
+                    // UTC timestamp
+                    genesisBlock.time = new Date().getTime().toString().slice(0,-3);
+                    // Block hash with SHA256 using Block and converting to a string
+                    genesisBlock.hash = SHA256(JSON.stringify(genesisBlock)).toString();
+                    // Adding block object to chain
+                    level.addDataToChain(JSON.stringify(genesisBlock).toString()).then(() => {
+                        // Add the newBlock
+                        newBlock.height = height + 1;// block height is the block # at which its added.
+                        level.getChainData(height).then( value => {
+                            var json = JSON.parse(value);
+                            console.log('json for getting previous hash:' + json['hash']);
+                            newBlock.previousBlockHash = json['hash'];
+                            // UTC timestamp
+                            newBlock.time = new Date().getTime().toString().slice(0,-3);
+                            // Block hash with SHA256 using newBlock and converting to a string
+                            newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
+                            // Adding block object to chain
+                            return level.addDataToChain(JSON.stringify(newBlock).toString());
+                        });
+                    });
+                }
+                else{
                     // Add the newBlock
                     newBlock.height = height + 1;// block height is the block # at which its added.
                     level.getChainData(height).then( value => {
                         var json = JSON.parse(value);
+                        console.log('json for getting previous hash:' + json['hash']);
                         newBlock.previousBlockHash = json['hash'];
+                        // UTC timestamp
+                        newBlock.time = new Date().getTime().toString().slice(0,-3);
+                        // Block hash with SHA256 using newBlock and converting to a string
+                        newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
+                        // Adding block object to chain
+                        return level.addDataToChain(JSON.stringify(newBlock).toString());
                     });
-                    // UTC timestamp
-                    newBlock.time = new Date().getTime().toString().slice(0,-3);
-                    // Block hash with SHA256 using newBlock and converting to a string
-                    newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
-                    // Adding block object to chain
-                    level.addDataToChain(JSON.stringify(newBlock).toString());
-                });
-            }
-            else{
-                // Add the newBlock
-                newBlock.height = height + 1;// block height is the block # at which its added.
-                level.getChainData(height).then( value => {
-                    var json = JSON.parse(value);
-                    newBlock.previousBlockHash = json['hash'];
-                });
 
-                // UTC timestamp
-                newBlock.time = new Date().getTime().toString().slice(0,-3);
-                // Block hash with SHA256 using newBlock and converting to a string
-                newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
-                // Adding block object to chain
-                level.addDataToChain(JSON.stringify(newBlock).toString());
-            }
-        }).catch((error) => { console.log('Exception in addBlock:' + error)}
-        );
+                }
+            }).catch((error) => { console.log('Exception in addBlock:' + error);});
+        });
     }
 
     // validate block
     validateBlock(blockHeight){
         // get block object
-        let block = level.getChainData(blockHeight);
-        // get block hash
-        let blockHash = block.hash;
-        // remove block hash to test block integrity
-        block.hash = '';
-        // generate block hash
-        let validBlockHash = SHA256(JSON.stringify(block)).toString();
-        // Compare
-        if (blockHash===validBlockHash) {
-            return true;
-        } else {
-            console.log('Block #'+blockHeight+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
-            return false;
-        }
+        level.getChainData(blockHeight).then( value => {
+            var json = JSON.parse(value);
+            // get block hash
+            let blockHash = json.hash;
+            // remove block hash to test block integrity
+            json.hash = '';
+            // generate block hash
+            let validBlockHash = SHA256(json);
+            // Compare
+            if (blockHash===validBlockHash) {
+            } else {
+                console.log('Block #'+blockHeight+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
+                reject();
+            }
+
+        });
+
     }
 
     // Validate blockchain
     validateChain(){
         let errorLog = [];
-        for (var i = 0; i <= level.getChainHeight(); i++) {
-            // validate block
-            if (!this.validateBlock(i))errorLog.push(i);
-            // compare blocks hash link
-            let blockHash = level.getChainData(i).hash;
-            let previousHash = level.getChainData(i+1).previousBlockHash;
-            if (blockHash!==previousHash) {
-                errorLog.push(i);
+        level.getChainHeight().then(height => { return height;}).then( function(height){
+            for (var i = 0; i <= height; i++) {
+                level.getChainData(i).then( value => {
+                    var json = JSON.parse(value);
+                    let blockHash = json.hash;
+                    json.hash = '';
+                    let validBlockHash = SHA256(JSON.stringify(json).toString());
+                    if (blockHash==validBlockHash) {
+                    } else {
+                        console.log('Block #'+json.height+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
+                    }
+                    let previousHash = json.previousBlockHash;
+                }).then(height,previousHash => {
+                    level.getChainData(height - 1).then( value => {
+                        var json = JSON.parse(value);
+                        let blockHash = json.hash;
+                        if(blockHash !== previousBlockHash){
+                            errorLog.push(i);
+                        }
+                    });
+                });
             }
-        }
-        if (errorLog.length>0) {
-            console.log('Block errors = ' + errorLog.length);
-            console.log('Blocks: '+errorLog);
-        } else {
-            console.log('No errors detected');
-        }
+            if (errorLog.length>0) {
+                console.log('Block errors = ' + errorLog.length);
+                console.log('Blocks: '+errorLog);
+            } else {
+                console.log('No errors detected');
+            }
+        }).catch(error => {console.log('Exception in getChainHeight..:' + error);});
     }
     printChain(){
         level.printChain();
@@ -136,18 +154,27 @@ function getHeight(){
 |    Bitcoin blockchain adds 8640 blocks per day                               |
 |     ( new block every 10 minutes )                                           |
 |  ===========================================================================*/
-/*
+
 let Chain = new Blockchain();
+        j=-1;
+
     theLoop: (function theLoop (i) {
+        j++;
+        var sequence = Promise.resolve();
         setTimeout(function () {
-            Chain.addBlock('This is Block ' + i + ' Data');
+            sequence = sequence.then(() => {
+            Chain.addBlock(new Block ('This is Block ' + j + ' Data'));
             if (--i) theLoop(i);
+            });
         }, 100);
     })(10);
 /**/
-let Chain = new Blockchain();
+//level.printChain();
+//getHeight();
+
+        
+//Chain.validateChain();
 //Chain.addBlock(new Block('This is block data'));
-getHeight();
 //Chain.addBlock(new Block('This is block data'));
 //console.log('initialized chain\n');
 //console.log('Going to query added block now..\n');
