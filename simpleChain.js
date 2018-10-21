@@ -11,12 +11,12 @@ var level = require('./levelSandbox');
 |  ===============================================*/
 
 class Block{
-	constructor(data){
-     this.hash = "",
-     this.height = 0,
-     this.body = data,
-     this.time = 0,
-     this.previousBlockHash = ""
+    constructor(data){
+        this.hash = "",
+            this.height = 0,
+            this.body = data,
+            this.time = 0,
+            this.previousBlockHash = ""
     }
 }
 
@@ -25,14 +25,25 @@ class Block{
 |  ================================================*/
 
 class Blockchain{
+    /*Constructor*/
     constructor(){
     }
 
-    // Add new block
+    /*Gets the Block at a height.*/
+    getBlock(blockHeight){
+        return new Promise(function(resolve){
+            level.getChainData(blockHeight).then( value => {
+                resolve(value);
+            });
+        });
+    }
+
+    // Adds a new Block and a Genesis Block if the chain just initialized.
     addBlock(newBlock){
         // add the genesis Block if chain is empty, before adding a new block.
+        var obj = this;
         return new Promise(function (resolve) {
-            level.getChainHeight().then(height => { return height;}).then( function(height){
+            level.getChainHeight().then(function(height){
                 console.log('Height:' + height);
                 if(height === -1 ) {// add a genesis block.
                     console.log('adding the Genesis block.' );
@@ -45,7 +56,7 @@ class Blockchain{
                     level.addDataToChain(JSON.stringify(genesisBlock).toString()).then(() => {
                         // Add the newBlock
                         newBlock.height = height + 1;// block height is the block # at which its added.
-                        level.getChainData(height).then( value => {
+                        obj.getBlock(height).then( value => {
                             var json = JSON.parse(value);
                             console.log('json for getting previous hash:' + json['hash']);
                             newBlock.previousBlockHash = json['hash'];
@@ -61,7 +72,7 @@ class Blockchain{
                 else{
                     // Add the newBlock
                     newBlock.height = height + 1;// block height is the block # at which its added.
-                    level.getChainData(height).then( value => {
+                    obj.getBlock(height).then( value => {
                         var json = JSON.parse(value);
                         console.log('json for getting previous hash:' + json['hash']);
                         newBlock.previousBlockHash = json['hash'];
@@ -78,48 +89,38 @@ class Blockchain{
         });
     }
 
-    // validate block
+    //Validates a block at a height.
     validateBlock(blockHeight){
         // get block object
-        level.getChainData(blockHeight).then( value => {
-            var json = JSON.parse(value);
-            // get block hash
-            let blockHash = json.hash;
-            // remove block hash to test block integrity
-            json.hash = '';
-            // generate block hash
-            let validBlockHash = SHA256(json);
-            // Compare
-            if (blockHash===validBlockHash) {
-            } else {
-                console.log('Block #'+blockHeight+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
-                reject();
-            }
-
-        });
-
+        var obj = this;
+        return new Promise(function(resolve) {
+            obj.getBlock(blockHeight).then( value => {
+                var json = JSON.parse(value);
+                let blockHash = json.hash;
+                json.hash = '';
+                let validBlockHash = SHA256(JSON.stringify(json).toString());
+                // Compare
+                if (blockHash==validBlockHash) {
+                    resolve(json.previousBlockHash);
+                } else {
+                    console.log('Block #'+blockHeight+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
+                }
+            });
+        }).catch((error) => {console.log('Exception in getBlock:' + error);});
     }
 
-    // Validate blockchain
+    //Validate the blockchain
     validateChain(){
         let errorLog = [];
-        level.getChainHeight().then(height => { return height;}).then( function(height){
+        var obj = this;
+        level.getChainHeight().then(function(height){
             for (var i = 0; i <= height; i++) {
-                level.getChainData(i).then( value => {
-                    var json = JSON.parse(value);
-                    let blockHash = json.hash;
-                    json.hash = '';
-                    let validBlockHash = SHA256(JSON.stringify(json).toString());
-                    if (blockHash==validBlockHash) {
-                    } else {
-                        console.log('Block #'+json.height+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
-                    }
-                    let previousHash = json.previousBlockHash;
-                }).then(height,previousHash => {
-                    level.getChainData(height - 1).then( value => {
+                obj.validateBlock(i).then( value => {
+                    let previousHash = value.toString();
+                    obj.getBlock(i - 1).then( value => {
                         var json = JSON.parse(value);
                         let blockHash = json.hash;
-                        if(blockHash !== previousBlockHash){
+                        if(blockHash !== previousHash){
                             errorLog.push(i);
                         }
                     });
@@ -131,20 +132,20 @@ class Blockchain{
             } else {
                 console.log('No errors detected');
             }
-        }).catch(error => {console.log('Exception in getChainHeight..:' + error);});
+        }).catch(error => {console.log('Exception in validateChain..:' + error);});
     }
     printChain(){
         level.printChain();
     }
-
-}
-function getHeight(){
-        level.getChainHeight().then(height => { return height;}).then( function(height){
-            console.log('Height: ' + height);
+    getBlockHeight(){
+        level.getChainHeight().then(function(height){
+            console.log('Chain Height : ' + height);
         });
+    }
+
 }
 
-    /* ===== Testing ==============================================================|
+/* ===== Testing ==============================================================|
 |  - Self-invoking function to add blocks to chain                             |
 |  - Learn more:                                                               |
 |   https://scottiestech.info/2014/07/01/javascript-fun-looping-with-a-delay/  |
@@ -156,8 +157,8 @@ function getHeight(){
 |  ===========================================================================*/
 
 let Chain = new Blockchain();
-        j=-1;
-
+j=-1;
+/*
     theLoop: (function theLoop (i) {
         j++;
         var sequence = Promise.resolve();
@@ -169,31 +170,8 @@ let Chain = new Blockchain();
         }, 100);
     })(10);
 /**/
-//level.printChain();
-//getHeight();
 
-        
-//Chain.validateChain();
-//Chain.addBlock(new Block('This is block data'));
-//Chain.addBlock(new Block('This is block data'));
-//console.log('initialized chain\n');
-//console.log('Going to query added block now..\n');
-/*let promise_= level.getChainHeight2();
-promise_.then(height => {
-    console.log( 'Height: ' + height);
-});/**/
-//getHeight().then(height => { console.log( 'Height: ' + height);})
-/*
-level.getChainHeight().then(height => { console.log( 'Height: ' + height);}).then( function(){
-console.log('aaaa');
-console.log('aaaa');
-console.log('aaaa');
-console.log('aaaa');
-console.log('aaaa');
-});/**/
-//console.log('Chain Height: ' + getHeight());
-//console.log( 'Heighttttt: ' + level.getChainHeight());
-//Chain.validateChain();
-//console.log('validated chain\n');
-//Chain.printChain();
+level.printChain();
+Chain.getBlockHeight();
+//Chain.validateChain();/**/
 

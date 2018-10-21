@@ -24,11 +24,11 @@ module.exports = {
     // Get data from levelDB with key
     getChainData : function getChainData(key){
         return new Promise(function (resolve,reject) {
-        db.get(key, function(err, value) {
-            if (err) return console.log('Not found!', err);
-            //console.log('Value = ' + value);
-            resolve(value);
-        })
+            db.get(key, function(err, value) {
+                if (err) return console.log('Not found!', err);
+                //console.log('Value = ' + value);
+                resolve(value);
+            })
         });
     },
 
@@ -39,7 +39,7 @@ module.exports = {
             db.createReadStream().on('data', function(data) {
                 i++;
             }).on('error', function(err) {
-                //return console.log('Unable to read data stream!', err)
+                return console.log('Unable to read data stream!', err)
             }).on('close', function() {
                 console.log('going to add Block #' + i);
                 return module.exports.addChainData(i, value);
@@ -47,7 +47,7 @@ module.exports = {
         });
     },
     getChainHeight : function getChainHeight() {
-        return new Promise(function (resolve,reject) {
+        return new Promise(function (resolve) {
             let i = 0;
             db.createReadStream().on('data', function(data) {
                 i++;
@@ -62,7 +62,6 @@ module.exports = {
         let i = 0;
         console.log('Printing Chain Data:');
         console.log('--------------------');
-        //console.log('Chain Height: ' + module.exports.getChainHeight());
         db.createReadStream().on('data', function(data) {
             let json = JSON.parse(data.value);
             console.log('');
