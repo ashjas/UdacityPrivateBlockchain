@@ -135,7 +135,14 @@ class Blockchain{
         }).catch(error => {console.log('Exception in validateChain..:' + error);});
     }
     printChain(){
-        level.printChain();
+        var obj = this;
+        level.getChainHeight().then(function(height){
+            for (var i = 0; i <= height; i++) {
+                obj.getBlock(i).then( value => {
+                    console.log(value);
+                });
+            }
+        }).catch(error => {console.log('Exception in validateChain..:' + error);});
     }
     getBlockHeight(){
         level.getChainHeight().then(function(height){
@@ -171,7 +178,28 @@ j=-1;
     })(10);
 /**/
 
-level.printChain();
-Chain.getBlockHeight();
-//Chain.validateChain();/**/
+//Chain.printChain();
+//Chain.getBlockHeight();
 
+function putModifiedBlock(value)
+{
+    return new Promise(function (resolve) {
+        var json = JSON.parse(value);
+        json.data = 'induced chain error';
+        var val = JSON.stringify(json).toString();
+        console.log('idx,val:' + idx + ',' + val);
+        level.addChainData(idx,val);
+    });
+}
+let inducedErrorBlocks = [2,4,7];
+var sequence = Promise.resolve();
+for (var i = 0; i < inducedErrorBlocks.length; i++) {
+    var idx = inducedErrorBlocks[i];
+    Chain.getBlock(idx).then(value => {
+        return value;
+    }).then(putModifiedBlock).catch(error => {console.log(error)})
+//    sequence = sequence.then(() => {
+//      return Chain.getBlock(idx).then(putModifiedBlock);
+//    });
+}/**/
+//Chain.validateChain();/**/
