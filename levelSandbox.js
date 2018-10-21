@@ -6,49 +6,72 @@ const level = require('level');
 const chainDB = './chaindata';
 const db = level(chainDB);
 
-// Add data to levelDB with key/value pair
-function addLevelDBData(key,value){
-  db.put(key, value, function(err) {
-    if (err) return console.log('Block ' + key + ' submission failed', err);
-  })
-}
+module.exports = {
+    // Add data to levelDB with key/value pair
+    addChainData : function addChainData(key,value){
+        return new Promise(function (resolve,reject) {
+            console.log('going to put..');
+            db.put(key, value, function(err) {
+                if (err) return console.log('Block ' + key + ' submission failed', err);
+                db.get(key,function(err,value) {
+                    resolve();
+                    //return console.log('Added block with key: ' + key + ' Value: ' + value);
+                })
+            })
+        });
+    },
 
-// Get data from levelDB with key
-function getLevelDBData(key){
-  db.get(key, function(err, value) {
-    if (err) return console.log('Not found!', err);
-    console.log('Value = ' + value);
-  })
-}
+    // Get data from levelDB with key
+    getChainData : function getChainData(key){
+        return new Promise(function (resolve,reject) {
+            db.get(key, function(err, value) {
+                if (err) return console.log('Not found!', err);
+                //console.log('Value = ' + value);
+                resolve(value);
+            })
+        });
+    },
 
-// Add data to levelDB with value
-function addDataToLevelDB(value) {
-    let i = 0;
-    db.createReadStream().on('data', function(data) {
-          i++;
+    // Add data to levelDB with value
+    addDataToChain : function addDataToChain(value) {
+        return new Promise(function (resolve,reject) {
+            let i = 0;
+            db.createReadStream().on('data', function(data) {
+                i++;
+            }).on('error', function(err) {
+                return console.log('Unable to read data stream!', err)
+            }).on('close', function() {
+                console.log('going to add Block #' + i);
+                return module.exports.addChainData(i, value);
+            });
+        });
+    },
+    getChainHeight : function getChainHeight() {
+        return new Promise(function (resolve) {
+            let i = 0;
+            db.createReadStream().on('data', function(data) {
+                i++;
+            }).on('error', function(err) {
+                return console.log('Unable to read data stream!', err)
+            }).on('close', function() {
+                resolve( i-1 );
+            });
+        });
+    },
+    printChain : function printChain() {
+        let i = 0;
+        console.log('Printing Chain Data:');
+        console.log('--------------------');
+        db.createReadStream().on('data', function(data) {
+            let json = JSON.parse(data.value);
+            console.log('');
+            console.log('Block height: ' + json['height']);
+            console.log('Block hash: ' + json['hash']);
+            console.log('Block previousBlockHash: ' + json['previousBlockHash']);
+            console.log('Block body: ' + json['body']);
+            i++;
         }).on('error', function(err) {
             return console.log('Unable to read data stream!', err)
-        }).on('close', function() {
-          console.log('Block #' + i);
-          addLevelDBData(i, value);
         });
-}
-
-/* ===== Testing ==============================================================|
-|  - Self-invoking function to add blocks to chain                             |
-|  - Learn more:                                                               |
-|   https://scottiestech.info/2014/07/01/javascript-fun-looping-with-a-delay/  |
-|                                                                              |
-|  * 100 Milliseconds loop = 36,000 blocks per hour                            |
-|     (13.89 hours for 500,000 blocks)                                         |
-|    Bitcoin blockchain adds 8640 blocks per day                               |
-|     ( new block every 10 minutes )                                           |
-|  ===========================================================================*/
-
-
-(function theLoop (i) {
-  setTimeout(function () {
-    addDataToLevelDB('Testing data');
-    if (--i) theLoop(i);
-  }, 100);
-})(10);
+    }
+};
