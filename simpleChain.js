@@ -4,21 +4,9 @@
 
 const SHA256 = require('crypto-js/sha256');
 var level = require('./levelSandbox');
+var Block = require('./Block');
 
 
-/* ===== Block Class ==============================
-|  Class with a constructor for block 			   |
-|  ===============================================*/
-
-class Block{
-    constructor(data){
-        this.hash = "",
-            this.height = 0,
-            this.body = data,
-            this.time = 0,
-            this.previousBlockHash = ""
-    }
-}
 
 /* ===== Blockchain Class ==========================
 |  Class with a constructor for new blockchain 		|
@@ -31,11 +19,13 @@ class Blockchain{
 
     /*Gets the Block at a height.*/
     getBlock(blockHeight){
-        return new Promise(function(resolve){
+        return new Promise(function(resolve,reject){// on resolve
             level.getChainData(blockHeight).then( value => {
                 resolve(value);
+            }).catch(error => {
+                reject(error);
             });
-        });
+        })
     }
 
     // Adds a new Block and a Genesis Block if the chain just initialized.
@@ -151,6 +141,7 @@ class Blockchain{
     }
 
 }
+module.exports.Blockchain = Blockchain;
 
 /* ===== Testing ==============================================================|
 |  - Self-invoking function to add blocks to chain                             |
@@ -163,8 +154,8 @@ class Blockchain{
 |     ( new block every 10 minutes )                                           |
 |  ===========================================================================*/
 
-let Chain = new Blockchain();
-j=-1;
+//let Chain = new Blockchain();
+//j=-1;
 /*
     theLoop: (function theLoop (i) {
         j++;
@@ -180,7 +171,7 @@ j=-1;
 
 //Chain.printChain();
 //Chain.getBlockHeight();
-
+/*
 function putModifiedBlock(value)
 {
     return new Promise(function (resolve) {

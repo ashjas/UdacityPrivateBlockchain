@@ -25,7 +25,8 @@ module.exports = {
     getChainData : function getChainData(key){
         return new Promise(function (resolve,reject) {
             db.get(key, function(err, value) {
-                if (err) return console.log('Not found!', err);
+                if (err) //return console.log('Not found!', err);
+                    reject(err);
                 //console.log('Value = ' + value);
                 resolve(value);
             })
