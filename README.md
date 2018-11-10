@@ -71,7 +71,7 @@ and adding a block to the Blockchain.
 
 1: Open a command prompt and start the server:
 ```
-node serveRest.hs
+node serveRest.js
 ```
 
 2: Using a browser, one can query the details of a block giving the height as a parameter:

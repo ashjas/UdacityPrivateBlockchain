@@ -30,7 +30,7 @@ server.route([{
 },
 {
     method: 'POST',
-    path: '/add',
+    path: '/block',
     handler:async function(request,h) {
         try {
             let Chain = new Blockchain.Blockchain();
