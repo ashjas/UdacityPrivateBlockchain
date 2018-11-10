@@ -15,7 +15,7 @@ module.exports = {
                 if (err) return console.log('Block ' + key + ' submission failed', err);
                 db.get(key,function(err,value) {
                     resolve();
-                    //return console.log('Added block with key: ' + key + ' Value: ' + value);
+                    return console.log('Added block with key: ' + key + ' Value: ' + value);
                 })
             })
         });
@@ -25,7 +25,8 @@ module.exports = {
     getChainData : function getChainData(key){
         return new Promise(function (resolve,reject) {
             db.get(key, function(err, value) {
-                if (err) return console.log('Not found!', err);
+                if (err) //return console.log('Not found!', err);
+                    reject(err);
                 //console.log('Value = ' + value);
                 resolve(value);
             })

@@ -4,21 +4,9 @@
 
 const SHA256 = require('crypto-js/sha256');
 var level = require('./levelSandbox');
+var Block = require('./Block');
 
 
-/* ===== Block Class ==============================
-|  Class with a constructor for block 			   |
-|  ===============================================*/
-
-class Block{
-    constructor(data){
-        this.hash = "",
-            this.height = 0,
-            this.body = data,
-            this.time = 0,
-            this.previousBlockHash = ""
-    }
-}
 
 /* ===== Blockchain Class ==========================
 |  Class with a constructor for new blockchain 		|
@@ -31,11 +19,13 @@ class Blockchain{
 
     /*Gets the Block at a height.*/
     getBlock(blockHeight){
-        return new Promise(function(resolve){
+        return new Promise(function(resolve,reject){// on resolve
             level.getChainData(blockHeight).then( value => {
                 resolve(value);
+            }).catch(error => {
+                reject(error);
             });
-        });
+        })
     }
 
     // Adds a new Block and a Genesis Block if the chain just initialized.
@@ -65,7 +55,8 @@ class Blockchain{
                             // Block hash with SHA256 using newBlock and converting to a string
                             newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
                             // Adding block object to chain
-                            return level.addDataToChain(JSON.stringify(newBlock).toString());
+                            level.addDataToChain(JSON.stringify(newBlock).toString());
+                            resolve(JSON.stringify(newBlock).toString());
                         });
                     });
                 }
@@ -81,7 +72,8 @@ class Blockchain{
                         // Block hash with SHA256 using newBlock and converting to a string
                         newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
                         // Adding block object to chain
-                        return level.addDataToChain(JSON.stringify(newBlock).toString());
+                        level.addDataToChain(JSON.stringify(newBlock).toString());
+                        resolve(JSON.stringify(newBlock).toString());
                     });
 
                 }
@@ -135,7 +127,14 @@ class Blockchain{
         }).catch(error => {console.log('Exception in validateChain..:' + error);});
     }
     printChain(){
-        level.printChain();
+        var obj = this;
+        level.getChainHeight().then(function(height){
+            for (var i = 0; i <= height; i++) {
+                obj.getBlock(i).then( value => {
+                    console.log(value);
+                });
+            }
+        }).catch(error => {console.log('Exception in validateChain..:' + error);});
     }
     getBlockHeight(){
         level.getChainHeight().then(function(height){
@@ -144,6 +143,7 @@ class Blockchain{
     }
 
 }
+module.exports.Blockchain = Blockchain;
 
 /* ===== Testing ==============================================================|
 |  - Self-invoking function to add blocks to chain                             |
@@ -156,8 +156,8 @@ class Blockchain{
 |     ( new block every 10 minutes )                                           |
 |  ===========================================================================*/
 
-let Chain = new Blockchain();
-j=-1;
+//let Chain = new Blockchain();
+//j=-1;
 /*
     theLoop: (function theLoop (i) {
         j++;
@@ -171,7 +171,28 @@ j=-1;
     })(10);
 /**/
 
-level.printChain();
-Chain.getBlockHeight();
+//Chain.printChain();
+//Chain.getBlockHeight();
+/*
+function putModifiedBlock(value)
+{
+    return new Promise(function (resolve) {
+        var json = JSON.parse(value);
+        json.data = 'induced chain error';
+        var val = JSON.stringify(json).toString();
+        console.log('idx,val:' + idx + ',' + val);
+        level.addChainData(idx,val);
+    });
+}
+let inducedErrorBlocks = [2,4,7];
+var sequence = Promise.resolve();
+for (var i = 0; i < inducedErrorBlocks.length; i++) {
+    var idx = inducedErrorBlocks[i];
+    Chain.getBlock(idx).then(value => {
+        return value;
+    }).then(putModifiedBlock).catch(error => {console.log(error)})
+//    sequence = sequence.then(() => {
+//      return Chain.getBlock(idx).then(putModifiedBlock);
+//    });
+}/**/
 //Chain.validateChain();/**/
-
