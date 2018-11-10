@@ -74,7 +74,7 @@ and adding a block to the Blockchain.
 node serveRest.hs
 ```
 
-2: Using a browser, one can query the details of the block giving the height as a parameter:
+2: Using a browser, one can query the details of a block giving the height as a parameter:
 ````
 http://localhost:8000/block/14
 ````
@@ -89,3 +89,23 @@ add the block data in the command body in this format:
     "body":"Some data example"
 }
 ```
+## Built With
+
+* [nodejs](https://nodejs.org/en/) - The javascript framework used.
+* [Hapi](https://hapijs.com/) - A rich framework for building applications and services.
+* [LevelDB](http://leveldb.org/) - A light-weight, single-purpose library for persistence.
+* [crypto-js](https://www.npmjs.com/package/crypto-js) - JavaScript library of crypto standards.
+
+## Authors
+
+* **Udacity** - *Initial template provided by Udacity* - [Udacity](https://github.com/udacity)
+* **Ashish Soni** - *Progressively implemented course projects * - [ashjas](https://github.com/ashjas)
+
+## License
+
+This project is licensed under the MIT License.
+
+## Acknowledgments
+
+* Udacity instructors
+* Udacity Blockchain Nanodegree Course
