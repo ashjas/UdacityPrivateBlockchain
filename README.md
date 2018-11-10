@@ -24,6 +24,10 @@ npm install crypto-js --save
 ```
 npm install level --save
 ```
+- Install hapi framework with --save flag
+```
+npm install hapi --save
+```
 
 ## Testing
 
@@ -58,4 +62,30 @@ for (var i = 0; i < inducedErrorBlocks.length; i++) {
 8: Validate blockchain. The chain should now fail with blocks 2,4, and 7.
 ```
 blockchain.validateChain();
+```
+
+## Testing REST methods
+
+This project supports two REST methods to query a block given a height,
+and adding a block to the Blockchain.
+
+1: Open a command prompt and start the server:
+```
+node serveRest.hs
+```
+
+2: Using a browser, one can query the details of the block giving the height as a parameter:
+````
+http://localhost:8000/block/14
+````
+The above command fetches the block at height 14 for example.
+
+3: One can also add a block by issuing a POST request using Postman:
+```
+http://localhost:8000/add
+
+add the block data in the command body in this format:
+{
+    "body":"Some data example"
+}
 ```
