@@ -5,6 +5,21 @@ var Block = require('./Block');
 
 const Hapi=require('hapi');
 
+class restERROR{
+    constructor(code, msg) {
+        this.code = code,
+        this.message = msg
+    }
+    getJson(){
+        let error = {
+            error: {
+                code: this.code,
+                message: this.message
+            }
+        };
+        return JSON.parse(JSON.stringify(error));
+    }
+}
 // Create a server with a host and port
 const server=Hapi.server({
     host:'localhost',
@@ -22,8 +37,7 @@ server.route([{
             return JSON.parse(out);
         }
         catch(error) {
-            //return error.message;
-            return 'Invalid Block: ' + request.params.height;
+            return new restERROR(1501,'Invalid Block height parameter:'+ request.params.height).getJson();
         }
     }
 },
@@ -39,10 +53,10 @@ server.route([{
                 return JSON.parse(out);
             }
             else
-                return 'Request does not have \'body\' field, which is required for adding a block.';
+                return new restERROR(1500,'Request parameter does not have \'body\' field, which is required for adding a block.').getJson();
         }
         catch(error) {
-            return 'Error in adding Block. ' + error;          
+            return 'Exception in POST handler: ' + error;          
         }
     }
 }]);

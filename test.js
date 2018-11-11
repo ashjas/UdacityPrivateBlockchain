@@ -55,9 +55,6 @@ function induceErrorInChain() {
         Chain.getBlock(idx).then(value => {
             return [idx,value];
         }).then(putModifiedBlock).catch(error => { console.log(error) })
-        //    sequence = sequence.then(() => {
-        //      return Chain.getBlock(idx).then(putModifiedBlock);
-        //    });
     }
 }
 
@@ -67,7 +64,7 @@ function validateChain(){
 }
 
 // Calls for running tests..
-//populateChainWithBlocks(10);
-printChain();
+populateChainWithBlocks(20);
+//printChain();
 //validateChain();
 //induceErrorInChain();
