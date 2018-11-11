@@ -33,37 +33,37 @@ class Blockchain{
         // add the genesis Block if chain is empty, before adding a new block.
         var obj = this;
         return new Promise(function (resolve) {
-            level.getChainHeight().then(function(height){
+            level.getChainHeight().then(function (height) {
                 console.log('Height:' + height);
-                if(height === -1 ) {// add a genesis block.
-                    console.log('adding the Genesis block.' );
-                    var genesisBlock = new Block('Genesis Block');
+                if (height === -1) {// add a genesis block.
+                    console.log('adding the Genesis block.');
+                    var genesisBlock = new Block.Block('Genesis Block');
                     // UTC timestamp
-                    genesisBlock.time = new Date().getTime().toString().slice(0,-3);
+                    genesisBlock.time = new Date().getTime().toString().slice(0, -3);
                     // Block hash with SHA256 using Block and converting to a string
                     genesisBlock.hash = SHA256(JSON.stringify(genesisBlock)).toString();
                     // Adding block object to chain
                     level.addDataToChain(JSON.stringify(genesisBlock).toString()).then(() => {
                         // Add the newBlock
-                        newBlock.height = height + 1;// block height is the block # at which its added.
-                        obj.getBlock(height).then( value => {
+                        obj.getBlock(0).then(value => {// for getting the genesis block hash
                             var json = JSON.parse(value);
                             console.log('json for getting previous hash:' + json['hash']);
                             newBlock.previousBlockHash = json['hash'];
+                            newBlock.height = json['height'] + 1;
                             // UTC timestamp
-                            newBlock.time = new Date().getTime().toString().slice(0,-3);
+                            newBlock.time = new Date().getTime().toString().slice(0, -3);
                             // Block hash with SHA256 using newBlock and converting to a string
                             newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
                             // Adding block object to chain
                             level.addDataToChain(JSON.stringify(newBlock).toString());
                             resolve(JSON.stringify(newBlock).toString());
-                        });
-                    });
+                        }).catch((error) => { console.log('Exception in addBlock:' + error);});
+                    }).catch((error) => { console.log('Exception in Genesis addBlock:' + error);});
                 }
-                else{
+                else {
                     // Add the newBlock
                     newBlock.height = height + 1;// block height is the block # at which its added.
-                    obj.getBlock(height).then( value => {
+                    obj.getBlock(height).then( value => {// for getting the previous block hash.
                         var json = JSON.parse(value);
                         console.log('json for getting previous hash:' + json['hash']);
                         newBlock.previousBlockHash = json['hash'];

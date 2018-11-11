@@ -12,10 +12,13 @@ module.exports = {
         return new Promise(function (resolve,reject) {
             console.log('going to put..');
             db.put(key, value, function(err) {
-                if (err) return console.log('Block ' + key + ' submission failed', err);
+                if (err) {
+                    console.log('Block ' + key + ' submission failed');
+                    reject(err);
+                }
                 db.get(key,function(err,value) {
-                    resolve();
-                    return console.log('Added block with key: ' + key + ' Value: ' + value);
+                    console.log('Added block with key: ' + key + ' Value: ' + value);
+                    resolve(value);
                 })
             })
         });
@@ -40,10 +43,13 @@ module.exports = {
             db.createReadStream().on('data', function(data) {
                 i++;
             }).on('error', function(err) {
-                return console.log('Unable to read data stream!', err)
+                console.log('Unable to read data stream!', err);
+                reject(err);
             }).on('close', function() {
                 console.log('going to add Block #' + i);
-                return module.exports.addChainData(i, value);
+                module.exports.addChainData(i, value).then(value =>{
+                    resolve(value);
+                });
             });
         });
     },
