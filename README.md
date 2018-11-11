@@ -1,6 +1,9 @@
-# Blockchain Data
+# Simple Private Blockchain
 
-Blockchain has the potential to change the way that the world approaches data. Develop Blockchain skills by understanding the data model behind Blockchain by developing your own simplified private blockchain.
+Blockchain has the potential to change the way that the world approaches data. 
+This project implements a simple blockchain, in javascript, and provides a way to add/query/validate blocks in the simple blockchain.
+Referring this project,one can develop Blockchain skills by understanding the data model behind Blockchain by developing your own
+simplified private blockchain.
 
 ## Getting Started
 
@@ -29,45 +32,56 @@ npm install level --save
 npm install hapi --save
 ```
 
-## Testing
+## Testing Prerequisites
 
-To test code:
-1: Open a command prompt or shell terminal after install node.js.
-2: Enter a node session, also known as REPL (Read-Evaluate-Print-Loop).
+In order to test this project, after cloning the project, one has to add data to the Blockchain on which tests
+can be performed.
+
+Issue the following command:
 ```
-node
+node test.js
 ```
-3: Copy and paste your code into your node session
-4: Instantiate blockchain with blockchain variable
+
+This test script, has few helper functions.
 ```
-let blockchain = new Blockchain();
+populateChainWithBlocks(numOfBlocks);
+printChain();
+validateChain();
+induceErrorInChain();
 ```
-5: Generate 10 blocks using a for loop
-```
-for (var i = 0; i <= 10; i++) {
-  blockchain.addBlock(new Block("test data "+i));
-}
-```
-6: Validate blockchain
-```
-blockchain.validateChain();
-```
-7: Induce errors by changing block data
-```
-let inducedErrorBlocks = [2,4,7];
-for (var i = 0; i < inducedErrorBlocks.length; i++) {
-  blockchain.chain[inducedErrorBlocks[i]].data='induced chain error';
-}
-```
-8: Validate blockchain. The chain should now fail with blocks 2,4, and 7.
-```
-blockchain.validateChain();
-```
+Upon first use, the blockchain is populated with dummy data using the 'populateChainWithBlocks' call.
+Thereafter, the one can play with other helper functions to interact with the blockchain. Call/remove these
+functions from the test.js script as needed to test the blockchain.
 
 ## Testing REST methods
 
 This project supports two REST methods to query a block given a height,
 and adding a block to the Blockchain.
+
+### Available Endpoints
+
+#### GET Endpoints
+
+##### Get a Block at specific height
+```
+http://localhost:8000/block/4
+```
+
+
+#### POST Endpoints
+
+##### Add a block to the chain.
+```
+http://localhost:8000/block
+```
+###### Parameters
+```
+{
+    "body":"Some data example"
+}
+```
+
+### Steps to test REST methods
 
 1: Open a command prompt and start the server:
 ```
@@ -82,7 +96,7 @@ The above command fetches the block at height 14 for example.
 
 3: One can also add a block by issuing a POST request using Postman:
 ```
-http://localhost:8000/add
+http://localhost:8000/block
 
 add the block data in the command body in this format:
 {
@@ -99,7 +113,7 @@ add the block data in the command body in this format:
 ## Authors
 
 * **Udacity** - *Initial template provided by Udacity* - [Udacity](https://github.com/udacity)
-* **Ashish Soni** - *Progressively implemented course projects * - [ashjas](https://github.com/ashjas)
+* **Ashish Soni** - *Progressively implemented course projects* - [ashjas](https://github.com/ashjas)
 
 ## License
 
