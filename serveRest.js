@@ -19,8 +19,7 @@ server.route([{
         try{
             let Chain = new Blockchain.Blockchain();
             var out =  await Chain.getBlock(encodeURIComponent(request.params.height));
-            var json = JSON.stringify(JSON.parse(out));
-            return json;
+            return JSON.parse(out);
         }
         catch(error) {
             //return error.message;
@@ -34,10 +33,10 @@ server.route([{
     handler:async function(request,h) {
         try {
             let Chain = new Blockchain.Blockchain();
-            var blockData = JSON.parse(request.payload)['body'];
+            var blockData = request.payload.body;
             if(blockData){
                 var out = await Chain.addBlock(new Block.Block(blockData));
-                return out;
+                return JSON.parse(out);
             }
             else
                 return 'Request does not have \'body\' field, which is required for adding a block.';
