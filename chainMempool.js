@@ -65,7 +65,6 @@ class MemPool {
     verifySignedMessage(msg) {
         let response;
         var idx = 0;
-        console.log('arrsize: ' + this.memPool.length);
         var obj = this;
         var found = this.memPool.some(function (element) {
             if (element.address == msg.walletAddress && element.authorized) {

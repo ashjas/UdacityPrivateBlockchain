@@ -46,7 +46,7 @@ server.route([{
 },
 {
     method:'GET',
-    path:'/block/hash/{hash}',
+    path:'/block/hash:{hash}',
     handler:async function(request,h) {
         try{
             let Chain = new Blockchain.Blockchain();
@@ -60,7 +60,7 @@ server.route([{
 },
 {
     method:'GET',
-    path:'/block/address/{address}',
+    path:'/block/address:{address}',
     handler:async function(request,h) {
         try{
             let Chain = new Blockchain.Blockchain();
@@ -89,7 +89,7 @@ server.route([{
                     return JSON.parse(out);
                 }
                 else
-                    return new restERROR(1505, 'Not authorized to add a block.').getJson();
+                    return new restERROR(1505, 'Not authorized to add a block. Post a request and validate with signature for address: ' + walletAddress).getJson();
             }
             else
                 return new restERROR(1506, 'Request parameter does not have \'body\' field, which is required for adding a block.' + 'error: ' + error).getJson();
