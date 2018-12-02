@@ -37,7 +37,7 @@ module.exports = {
                     reject(err);
                 //console.log('Value = ' + value);
                 var jsonData = JSON.parse(value);
-                if (isASCII(hex2ascii(jsonData.body.star.story))) {
+                if (jsonData.body.star !== undefined && isASCII(hex2ascii(jsonData.body.star.story))) {
                     jsonData.body.star.story = hex2ascii(jsonData.body.star.story);
                 }
                 resolve(jsonData);
@@ -53,7 +53,7 @@ module.exports = {
                 if(json['hash'] == hash)
                 {
                     var jsonData = JSON.parse(data.value);
-                    if (isASCII(hex2ascii(jsonData.body.star.story))) {
+                    if (jsonData.body.star !== undefined && isASCII(hex2ascii(jsonData.body.star.story))) {
                         jsonData.body.star.story = hex2ascii(jsonData.body.star.story);
                     }
                     resolve(jsonData);
@@ -75,7 +75,7 @@ module.exports = {
                 if(json['body']['walletAddress'] == walletAddress)
                 {
                     var jsonData = JSON.parse(data.value);
-                    if (isASCII(hex2ascii(jsonData.body.star.story))) {
+                    if (jsonData.body.star !== undefined && isASCII(hex2ascii(jsonData.body.star.story))) {
                         jsonData.body.star.story = hex2ascii(jsonData.body.star.story);
                     }
                     blockArray.push(jsonData);
