@@ -1,9 +1,8 @@
-# Simple Private Blockchain
+# Private Blockchain Notary Service
 
 Blockchain has the potential to change the way that the world approaches data. 
-This project implements a simple blockchain, in javascript, and provides a way to add/query/validate blocks in the simple blockchain.
-Referring this project,one can develop Blockchain skills by understanding the data model behind Blockchain by developing your own
-simplified private blockchain.
+This project implements a blockchain notary service, in javascript, and provides a way to add/query/validate blocks with star data in the private blockchain.
+Referring this project,one can develop Blockchain skills by understanding the data model behind Blockchain by developing your own private blockchain notary service.
 
 ## Getting Started
 
@@ -31,7 +30,18 @@ npm install level --save
 ```
 npm install hapi --save
 ```
-
+- Install bitcoinjs-message framework with --save flag
+```
+npm install bitcoinjs-message --save
+```
+- Install hex2ascii framework with --save flag
+```
+npm install hex2ascii --save
+```
+- Install text-encoding framework with --save flag
+```
+npm install text-encoding --save
+```
 ## Testing Prerequisites
 
 In order to test this project, after cloning the project, one has to add data to the Blockchain on which tests
@@ -55,8 +65,8 @@ functions from the test.js script as needed to test the blockchain.
 
 ## Testing REST methods
 
-This project supports two REST methods to query a block given a height,
-and adding a block to the Blockchain.
+This project supports REST methods to query a block(s) given a height/hash/walletAddress
+and adding a blocks to the Blockchain with star registry data.
 
 ### Available Endpoints
 
@@ -66,18 +76,76 @@ and adding a block to the Blockchain.
 ```
 http://localhost:8000/block/4
 ```
-
+##### Get a Block by its hash
+```
+http://localhost:8000/block/hash:{hash}
+```
+##### Get all blocks added by a specific walletAddress
+```
+http://localhost:8000/block/address:{address}
+```
 
 #### POST Endpoints
 
-##### Add a block to the chain.
+##### Post a validation request for star registration.
+```
+http://localhost:8000/requestValidation
+```
+###### Parameters
+```
+{
+    "walletAddress":"1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf"
+}
+```
+###### Output
+```
+{
+    "address": "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
+    "message": "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf:1543757535:starRegistry",
+    "requestTimestamp": "1543757535",
+    "validationWindow": 60
+}
+```
+
+##### Authorize yourself by posting a signed message using your favourite bitcoin wallet(e.g Electrum).
+```
+http://localhost:8000/message-signature/validate
+```
+###### Parameters
+Use the "message" field value from the output of /requestValidation POST query, sign this message and use this in 
+the "signature" field parameter of this POST request.
+```
+{
+    "walletAddress" : "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
+	"message"       : "1EsirC7HcF9geJzGLyrfX2zTQh6T2ZJ5FH:1543663627:starRegistry",
+	"signature"     : "H3ZNELL1MxsnmzVYMeBy5t87Ka6ZmpGO82+4Cf/QMjGQWs8EWuehc0Gwj6fuki/8pa8Vhs6Rm9jpPZR5wdmXIyY="
+}
+```
+A success message is recieved if signature is verified.
+###### Output
+```
+{
+    "message": "Verification Success. Can proceed to register a Star."
+}
+```
+
+##### Add a block with star registry data to the chain.
+User can add a block in star registry, if the signature is already verified using above POST requests.
+Note: The story field's value is limited to 500 bytes in ASCII text or hex encoded.
 ```
 http://localhost:8000/block
 ```
 ###### Parameters
 ```
 {
-    "body":"Some data example"
+    "body": {
+    "walletAddress": "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
+    "star": {
+      "ra": "1h 29m 1.0s",
+      "dec": "-36° 19' 27.9",
+      "story": "This is a sample story."
+    }
+  }
 }
 ```
 
@@ -87,20 +155,42 @@ http://localhost:8000/block
 ```
 node serveRest.js
 ```
-
 2: Using a browser, one can query the details of a block giving the height as a parameter:
 ````
 http://localhost:8000/block/14
 ````
 The above command fetches the block at height 14 for example.
-
-3: One can also add a block by issuing a POST request using Postman:
+3: POST a validation request:
+````
+http://localhost:8000/requestValidation
+body parameter format:
+{
+    "walletAddress":"1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf"
+}
+````
+4: Verify the signature:
+````
+http://localhost:8000/message-signature/validate
+body parameter format:
+{
+    "walletAddress" : "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
+	"message"       : "1EsirC7HcF9geJzGLyrfX2zTQh6T2ZJ5FH:1543663627:starRegistry",
+	"signature"     : "H3ZNELL1MxsnmzVYMeBy5t87Ka6ZmpGO82+4Cf/QMjGQWs8EWuehc0Gwj6fuki/8pa8Vhs6Rm9jpPZR5wdmXIyY="
+}
+````
+5: Add a block by issuing a POST request using Postman:
 ```
 http://localhost:8000/block
-
-add the block data in the command body in this format:
+body parameter format:
 {
-    "body":"Some data example"
+    "body": {
+    "walletAddress": "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
+    "star": {
+      "ra": "1h 29m 1.0s",
+      "dec": "-36° 19' 27.9",
+      "story": "This is a sample story."
+    }
+  }
 }
 ```
 ## Built With
