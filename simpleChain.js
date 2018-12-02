@@ -27,6 +27,28 @@ class Blockchain{
             });
         })
     }
+    
+    /*Gets the Block by its hash.*/
+    getBlockByHash(blockHash){
+        return new Promise(function(resolve,reject){// on resolve
+            level.getChainDataByHash(blockHash).then( value => {
+                resolve(value);
+            }).catch(error => {
+                reject(error);
+            });
+        })
+    }
+
+    /*Get all Blocks by walletAddress.*/
+    getBlockByAddress(walletAddress){
+        return new Promise(function(resolve,reject){// on resolve
+            level.getChainDataByAddress(walletAddress).then( value => {
+                resolve(value);
+            }).catch(error => {
+                reject(error);
+            });
+        })
+    }
 
     // Adds a new Block and a Genesis Block if the chain just initialized.
     addBlock(newBlock){
@@ -46,7 +68,7 @@ class Blockchain{
                     level.addDataToChain(JSON.stringify(genesisBlock).toString()).then(() => {
                         // Add the newBlock
                         obj.getBlock(0).then(value => {// for getting the genesis block hash
-                            var json = JSON.parse(value);
+                            var json = value;
                             console.log('json for getting previous hash:' + json['hash']);
                             newBlock.previousBlockHash = json['hash'];
                             newBlock.height = json['height'] + 1;
@@ -64,7 +86,8 @@ class Blockchain{
                     // Add the newBlock
                     newBlock.height = height + 1;// block height is the block # at which its added.
                     obj.getBlock(height).then( value => {// for getting the previous block hash.
-                        var json = JSON.parse(value);
+                        //var json = JSON.parse(value);
+                        var json = value;
                         console.log('json for getting previous hash:' + json['hash']);
                         newBlock.previousBlockHash = json['hash'];
                         // UTC timestamp
@@ -87,7 +110,7 @@ class Blockchain{
         var obj = this;
         return new Promise(function(resolve) {
             obj.getBlock(blockHeight).then( value => {
-                var json = JSON.parse(value);
+                var json = value;
                 let blockHash = json.hash;
                 json.hash = '';
                 let validBlockHash = SHA256(JSON.stringify(json).toString());
@@ -110,7 +133,7 @@ class Blockchain{
                 obj.validateBlock(i).then( value => {
                     let previousHash = value.toString();
                     obj.getBlock(i - 1).then( value => {
-                        var json = JSON.parse(value);
+                        var json = value;
                         let blockHash = json.hash;
                         if(blockHash !== previousHash){
                             errorLog.push(i);

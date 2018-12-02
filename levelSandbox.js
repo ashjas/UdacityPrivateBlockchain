@@ -4,7 +4,12 @@
 
 const level = require('level');
 const chainDB = './chaindata';
+var hex2ascii = require('hex2ascii');
 const db = level(chainDB);
+
+function isASCII(str) {
+    return /^[\x00-\x7F]*$/.test(str);
+}
 
 module.exports = {
     // Add data to levelDB with key/value pair
@@ -31,8 +36,55 @@ module.exports = {
                 if (err) //return console.log('Not found!', err);
                     reject(err);
                 //console.log('Value = ' + value);
-                resolve(value);
+                var jsonData = JSON.parse(value);
+                if (isASCII(hex2ascii(jsonData.body.star.story))) {
+                    jsonData.body.star.story = hex2ascii(jsonData.body.star.story);
+                }
+                resolve(jsonData);
             })
+        });
+    },
+
+    // Get data from levelDB with block's hash
+    getChainDataByHash : function getChainDataByHash(hash){
+        return new Promise(function (resolve) {
+            db.createReadStream().on('data', function(data) {
+                let json = JSON.parse(data.value);
+                if(json['hash'] == hash)
+                {
+                    var jsonData = JSON.parse(data.value);
+                    if (isASCII(hex2ascii(jsonData.body.star.story))) {
+                        jsonData.body.star.story = hex2ascii(jsonData.body.star.story);
+                    }
+                    resolve(jsonData);
+                }
+            }).on('error', function(err) {
+                return console.log('Unable to read data stream!', err)
+            }).on('close', function() {
+                resolve('Not found by hash');
+            });
+        });
+    },
+
+    // Get all block data from levelDB with a given walletAddress
+    getChainDataByAddress : function getChainDataByAddress(walletAddress){
+        return new Promise(function (resolve) {
+            var blockArray = new Array();
+            db.createReadStream().on('data', function(data) {
+                let json = JSON.parse(data.value);
+                if(json['body']['walletAddress'] == walletAddress)
+                {
+                    var jsonData = JSON.parse(data.value);
+                    if (isASCII(hex2ascii(jsonData.body.star.story))) {
+                        jsonData.body.star.story = hex2ascii(jsonData.body.star.story);
+                    }
+                    blockArray.push(jsonData);
+                }
+            }).on('error', function(err) {
+                return console.log('Unable to read data stream!', err)
+            }).on('close', function() {
+                resolve(blockArray);
+            });
         });
     },
 

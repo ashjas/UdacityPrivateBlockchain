@@ -4,7 +4,8 @@ var Blockchain = require('./simpleChain');
 var Block = require('./Block');
 var ChainPool = require('./chainMempool');
 
-const Hapi=require('hapi');
+const Hapi = require('hapi');
+const TextEncoder = require('text-encoding');
 var MemPool = new ChainPool.MemPool();
 class restERROR{
     constructor(code, msg) {
@@ -21,6 +22,7 @@ class restERROR{
         return JSON.parse(JSON.stringify(error));
     }
 }
+
 // Create a server with a host and port
 const server=Hapi.server({
     host:'localhost',
@@ -34,11 +36,39 @@ server.route([{
     handler:async function(request,h) {
         try{
             let Chain = new Blockchain.Blockchain();
-            var out =  await Chain.getBlock(encodeURIComponent(request.params.height));
-            return JSON.parse(out);
+            var jsonOut =  await Chain.getBlock(encodeURIComponent(request.params.height));
+            return jsonOut;
         }
         catch(error) {
-            return new restERROR(1501,'Invalid Block height parameter:'+ request.params.height).getJson();
+            return new restERROR(1501,'Request Failed with height parameter:'+ request.params.height + 'error: ' + error).getJson();
+        }
+    }
+},
+{
+    method:'GET',
+    path:'/block/hash/{hash}',
+    handler:async function(request,h) {
+        try{
+            let Chain = new Blockchain.Blockchain();
+            var jsonOut =  await Chain.getBlockByHash(encodeURIComponent(request.params.hash));
+            return jsonOut;
+        }
+        catch(error) {
+            return new restERROR(1502,'Request Failed with hash parameter:'+ request.params.hash + 'error: ' + error).getJson();
+        }
+    }
+},
+{
+    method:'GET',
+    path:'/block/address/{address}',
+    handler:async function(request,h) {
+        try{
+            let Chain = new Blockchain.Blockchain();
+            var jsonOut =  await Chain.getBlockByAddress(encodeURIComponent(request.params.address));
+            return jsonOut;
+        }
+        catch(error) {
+            return new restERROR(1503,'Request Failed with walletAddress parameter:'+ request.params.address + 'error: ' + error).getJson();
         }
     }
 },
@@ -49,17 +79,20 @@ server.route([{
         try {
             let Chain = new Blockchain.Blockchain();
             var blockData = request.payload.body;
-            var walletAddress = request.payload.walletAddress;
+            var walletAddress = request.payload.body.walletAddress;
             if (blockData) {
                 if (MemPool.isAuthorized(walletAddress)) {
+                    if(new TextEncoder.TextEncoder('utf-8').encode(request.payload.body.star.story).length > 500){
+                        return new restERROR(1504, 'Story length should be less than 500 bytes. Skipping Block addition!').getJson();
+                    }
                     var out = await Chain.addBlock(new Block.Block(blockData));
                     return JSON.parse(out);
                 }
                 else
-                    return new restERROR(1502, 'Not authorized to add a block.').getJson();
+                    return new restERROR(1505, 'Not authorized to add a block.').getJson();
             }
             else
-                return new restERROR(1503, 'Request parameter does not have \'body\' field, which is required for adding a block.').getJson();
+                return new restERROR(1506, 'Request parameter does not have \'body\' field, which is required for adding a block.' + 'error: ' + error).getJson();
         }
         catch (error) {
             return 'Exception in POST handler: ' + error;
@@ -77,7 +110,7 @@ server.route([{
                 return JSON.parse(out);
             }
             else
-                return new restERROR(1504,'Request parameter does not have \'walletAddress\' field, which is required for adding a block.').getJson();
+                return new restERROR(1507,'Request parameter does not have \'walletAddress\' field, which is required for adding a block.' + 'error: ' + error).getJson();
         }
         catch(error) {
             return 'Exception in POST handler: ' + error;          
@@ -95,14 +128,13 @@ server.route([{
                 return JSON.parse(out);
             }
             else
-                return new restERROR(1505,'Request parameter does not have \'signature\' field, which is required for adding a block.').getJson();
+                return new restERROR(1508,'Request parameter does not have \'signature\' field, which is required for adding a block.' + 'error: ' + error).getJson();
         }
         catch(error) {
             return 'Exception in POST handler: ' + error;          
         }
     }
-}
-]);
+}]);
 
 // Start the server
 async function start() {

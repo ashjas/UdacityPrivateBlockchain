@@ -14,6 +14,8 @@
     "crypto-js": "^3.1.9-1",
     "hapi": "^17.7.0",
     "hex2ascii": "0.0.3",
-    "level": "^4.0.0"
+    "level": "^4.0.0",
+    "text-encoder": "0.0.4",
+    "text-encoding": "^0.7.0"
   }
 }
