@@ -78,11 +78,11 @@ http://localhost:8000/block/4
 ```
 ##### Get a Block by its hash
 ```
-http://localhost:8000/block/hash:{hash}
+http://localhost:8000/stars/hash:{hash}
 ```
 ##### Get all blocks added by a specific walletAddress
 ```
-http://localhost:8000/block/address:{address}
+http://localhost:8000/stars/address:{address}
 ```
 
 #### POST Endpoints

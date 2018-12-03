@@ -46,7 +46,7 @@ server.route([{
 },
 {
     method:'GET',
-    path:'/block/hash:{hash}',
+    path:'/stars/hash:{hash}',
     handler:async function(request,h) {
         try{
             let Chain = new Blockchain.Blockchain();
@@ -60,7 +60,7 @@ server.route([{
 },
 {
     method:'GET',
-    path:'/block/address:{address}',
+    path:'/stars/address:{address}',
     handler:async function(request,h) {
         try{
             let Chain = new Blockchain.Blockchain();
@@ -78,24 +78,27 @@ server.route([{
     handler: async function (request, h) {
         try {
             let Chain = new Blockchain.Blockchain();
-            var blockData = request.payload.body;
-            var walletAddress = request.payload.body.walletAddress;
-            if (blockData) {
+            var walletAddress = request.payload.walletAddress;
+            if (walletAddress
+                && request.payload.star
+                && request.payload.star.dec
+                && request.payload.star.ra
+                && request.payload.star.story) {
                 if (MemPool.isAuthorized(walletAddress)) {
-                    if(new TextEncoder.TextEncoder('utf-8').encode(request.payload.body.star.story).length > 500){
+                    if(new TextEncoder.TextEncoder('utf-8').encode(request.payload.star.story).length > 500){
                         return new restERROR(1504, 'Story length should be less than 500 bytes. Skipping Block addition!').getJson();
                     }
-                    var out = await Chain.addBlock(new Block.Block(blockData));
+                    var out = await Chain.addBlock(new Block.Block(request.payload));
                     return JSON.parse(out);
                 }
                 else
                     return new restERROR(1505, 'Not authorized to add a block. Post a request and validate with signature for address: ' + walletAddress).getJson();
             }
             else
-                return new restERROR(1506, 'Request parameter does not have \'body\' field, which is required for adding a block.' + 'error: ' + error).getJson();
+                return new restERROR(1506, 'Request parameter does not have proper star registry format. Recheck request.').getJson();
         }
         catch (error) {
-            return 'Exception in POST handler: ' + error;
+            return 'Exception in POST /block handler: ' + error;
         }
     }
 },

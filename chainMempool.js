@@ -16,18 +16,30 @@ class MemPool {
     constructor(data) {
         this.memPool = [];
     }
-
+    getValidationWIndow(timeStamp){
+        return (validationWindow - (new Date().getTime().toString().slice(0, -3) - timeStamp));
+    }
+    isValidationWindowExpired(timeStamp){
+        return ( this.getValidationWIndow(timeStamp) <= 0 );
+    }
     addReqToPool(req) {
         let response;
         var alreadyAuthorized = false;
+        var idx = 0; var obj = this;
         var found = this.memPool.some(function (element) {
             if (element.address == req.address) {
-                if (element.authorized == false)
-                    element = req;//same wallet request rewrites the previous validation request.
-                else
-                    alreadyAuthorized = true;
-                return true;
+                if (!obj.isValidationWindowExpired(element.timeStamp)) {
+                    if (element.authorized == false)
+                        req = element;
+                    else
+                        alreadyAuthorized = true;
+                    return true;
+                }
+                else {// found but window expired.
+                    obj.memPool.splice(idx, 1);
+                }
             }
+            idx++;
             return false;
         });
         if (!found) {
@@ -39,7 +51,7 @@ class MemPool {
                 address: req.address,
                 message: req.message,
                 requestTimestamp: req.timeStamp,
-                validationWindow: validationWindow - (new Date().getTime().toString().slice(0, -3) - req.timeStamp)
+                validationWindow: obj.getValidationWIndow(req.timeStamp)
             };
         }
         else {
@@ -74,16 +86,26 @@ class MemPool {
                 return true;
             }
             else if (element.address == msg.walletAddress) {
-                if ((validationWindow - (new Date().getTime().toString().slice(0, -3) - element.timeStamp)) > 0) {//within validation window.
+                if (!obj.isValidationWindowExpired(element.timeStamp)) {//within validation window.
                     if (bitcoinMessage.verify(element.message, msg.walletAddress, msg.signature)) {
                         element.authorized = true;
                         response = {
-                            message: 'Verification Success. Can proceed to register a Star.'
+                            registerStar : true,
+                            address : element.address,
+                            requestTimestamp: element.timeStamp,
+                            message: element.message,
+                            validationWindow: obj.getValidationWIndow(element.timeStamp),
+                            messageSignature : 'valid'
                         };
                     }
                     else {
                         response = {
-                            message: 'Verification Failed, check your signature. You can\'t register a Star.'
+                            registerStar : false,
+                            address : element.address,
+                            requestTimestamp: element.timeStamp,
+                            message: element.message,
+                            validationWindow: obj.getValidationWIndow(element.timeStamp),
+                            messageSignature : 'invalid'
                         };
                     }
                 }
@@ -91,6 +113,14 @@ class MemPool {
                     obj.memPool.splice(idx, 1);
                     response = {
                         message: 'Validation window expired, add another request to mempool before verification.'
+                    };
+                    response = {
+                        registerStar : false,
+                        address : element.address,
+                        requestTimestamp: element.timeStamp,
+                        message: element.message,
+                        validationWindow: 'expired',
+                        messageSignature : 'validation skipped due to window expiry'
                     };
                 }
                 return true;

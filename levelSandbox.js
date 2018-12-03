@@ -32,15 +32,17 @@ module.exports = {
     // Get data from levelDB with key
     getChainData : function getChainData(key){
         return new Promise(function (resolve,reject) {
-            db.get(key, function(err, value) {
+            db.get(key, function (err, value) {
                 if (err) //return console.log('Not found!', err);
                     reject(err);
-                //console.log('Value = ' + value);
-                var jsonData = JSON.parse(value);
-                if (jsonData.body.star !== undefined && isASCII(hex2ascii(jsonData.body.star.story))) {
-                    jsonData.body.star.story = hex2ascii(jsonData.body.star.story);
+                //console.log('key: ' + key + ' Value = ' + value);
+                if (value !== undefined) {// fix exception with http://localhost:8000/block/hash:047bac0fe15caaaea052f0d86e586f616fdc211371147f84eea3e68b807b9b45
+                    var jsonData = JSON.parse(value);
+                    if (jsonData.body.star !== undefined && isASCII(hex2ascii(jsonData.body.star.story))) {
+                        jsonData.body.star.story = hex2ascii(jsonData.body.star.story);
+                    }
+                    resolve(jsonData);
                 }
-                resolve(jsonData);
             })
         });
     },
