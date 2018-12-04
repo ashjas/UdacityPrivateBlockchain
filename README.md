@@ -125,7 +125,14 @@ A success message is recieved if signature is verified.
 ###### Output
 ```
 {
-    "message": "Verification Success. Can proceed to register a Star."
+    "registerStar": false,
+    "status": {
+        "address": "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
+        "requestTimestamp": "1543940179",
+        "message": "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf:1543940179:starRegistry",
+        "validationWindow": 295,
+        "messageSignature": "valid"
+    }
 }
 ```
 
@@ -138,14 +145,12 @@ http://localhost:8000/block
 ###### Parameters
 ```
 {
-    "body": {
     "address": "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
     "star": {
       "ra": "1h 29m 1.0s",
       "dec": "-36° 19' 27.9",
-      "story": "This is a sample story."
+      "story": "416c6c20656e636f64696e67732066726f6d2074686520456e636f64696e672073706563696669636174696f6e206172652"
     }
-  }
 }
 ```
 
@@ -174,7 +179,6 @@ http://localhost:8000/message-signature/validate
 body parameter format:
 {
     "address" : "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
-	"message"       : "1EsirC7HcF9geJzGLyrfX2zTQh6T2ZJ5FH:1543663627:starRegistry",
 	"signature"     : "H3ZNELL1MxsnmzVYMeBy5t87Ka6ZmpGO82+4Cf/QMjGQWs8EWuehc0Gwj6fuki/8pa8Vhs6Rm9jpPZR5wdmXIyY="
 }
 ````
@@ -183,15 +187,13 @@ body parameter format:
 http://localhost:8000/block
 body parameter format:
 {
-    "body": {
     "address": "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
     "star": {
       "ra": "1h 29m 1.0s",
       "dec": "-36° 19' 27.9",
-      "story": "This is a sample story."
+      "story": "416c6c20656e636f64696e67732066726f6d2074686520456e636f64696e672073706563696669636174696f6e206172652"
     }
-  }
-}
+ }
 ```
 ## Built With
 
