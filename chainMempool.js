@@ -3,7 +3,7 @@
 |  ===============================================*/
 
 var bitcoinMessage = require('bitcoinjs-message');
-var validationWindow = 60;
+var validationWindow = 300;
 class validationRequest {
     constructor(address) {
         this.address = address;

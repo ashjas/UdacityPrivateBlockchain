@@ -3,11 +3,11 @@
 var Blockchain = require('./simpleChain');
 var Block = require('./Block');
 var ChainPool = require('./chainMempool');
-
 const Hapi = require('hapi');
 const TextEncoder = require('text-encoding');
 var hex2ascii = require('hex2ascii');
 var MemPool = new ChainPool.MemPool();
+
 class restERROR{
     constructor(code, msg) {
         this.code = code,
@@ -37,7 +37,8 @@ server.route([{
     handler:async function(request,h) {
         try{
             let Chain = new Blockchain.Blockchain();
-            var jsonOut =  await Chain.getBlock(encodeURIComponent(request.params.height));
+            var out =  await Chain.getBlock(encodeURIComponent(request.params.height));
+            var jsonOut = JSON.parse(out);
             jsonOut.body.star.storyDecoded = hex2ascii(jsonOut.body.star.story);
             return jsonOut;
         }
@@ -52,7 +53,8 @@ server.route([{
     handler:async function(request,h) {
         try{
             let Chain = new Blockchain.Blockchain();
-            var jsonOut =  await Chain.getBlockByHash(encodeURIComponent(request.params.hash));
+            var out =  await Chain.getBlockByHash(encodeURIComponent(request.params.hash));
+            var jsonOut = JSON.parse(out);
             jsonOut.body.star.storyDecoded = hex2ascii(jsonOut.body.star.story);
             return jsonOut;
         }
@@ -67,9 +69,12 @@ server.route([{
     handler:async function(request,h) {
         try{
             let Chain = new Blockchain.Blockchain();
-            var jsonOut =  await Chain.getBlockByAddress(encodeURIComponent(request.params.address));
-            jsonOut.body.star.storyDecoded = hex2ascii(jsonOut.body.star.story);
-            return jsonOut;
+            var jsonObjArray =  await Chain.getBlockByAddress(encodeURIComponent(request.params.address));
+            for(var i = 0; i < jsonObjArray.length; ++i)
+            {
+                jsonObjArray[i].body.star.storyDecoded = hex2ascii(jsonObjArray[i].body.star.story);
+            }            
+            return jsonObjArray;
         }
         catch(error) {
             return new restERROR(1503,'Request Failed with address parameter:'+ request.params.address + 'error: ' + error).getJson();
@@ -88,13 +93,12 @@ server.route([{
                 && request.payload.star.dec
                 && request.payload.star.ra
                 && request.payload.star.story) {
-                if (MemPool.isAuthorized(walletAddress) || true) {
+                if (MemPool.isAuthorized(walletAddress)) {
                     if(new TextEncoder.TextEncoder('utf-8').encode(request.payload.star.story).length > 500){
                         return new restERROR(1504, 'Story length should be less than 500 bytes. Skipping Block addition!').getJson();
                     }
                     var out = await Chain.addBlock(new Block.Block(request.payload));
                     var jsonOut = JSON.parse(out);
-                    jsonOut.body.star.storyDecoded = hex2ascii(jsonOut.body.star.story);
                     return jsonOut;
                 }
                 else
@@ -119,7 +123,7 @@ server.route([{
                 return JSON.parse(out);
             }
             else
-                return new restERROR(1507,'Request parameter does not have \'walletAddress\' field, which is required for adding a block.' + 'error: ' + error).getJson();
+                return new restERROR(1507,'Request parameter does not have \'address\' field, which is required for adding a block.').getJson();
         }
         catch(error) {
             return 'Exception in POST handler: ' + error;          

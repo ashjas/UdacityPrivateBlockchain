@@ -13,6 +13,17 @@ var Blockchain = require('./simpleChain');
 |     ( new block every 10 minutes )                                           |
 |  ===========================================================================*/
 
+var blockData = `{
+    "address": "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
+    "star": {
+      "ra": "16h 29m 1.0s",
+      "dec": "-26° 29' 24.9",
+      "story": "416c6c20656e636f64696e67732066726f6d2074686520456e636f64696e672073706563696669636174696f6e2061726520737570706f727465643a7574662d382069626d3836362069736f2d383835392d322069736f2d383835392d332069736f2d383835392d342069736f2d383835392d352069736f2d383835392d362069736f2d383835392d372069736f2d383835392d382069736f2d383835392d382d692069736f2d383835392d"
+    }
+  
+}`;
+
+
 function populateChainWithBlocks(numOfBlocks){
     let Chain = new Blockchain.Blockchain();
     j=-1;
@@ -21,7 +32,8 @@ function populateChainWithBlocks(numOfBlocks){
         var sequence = Promise.resolve();
         setTimeout(function () {
             sequence = sequence.then(() => {
-            Chain.addBlock(new Block.Block ('This is Block ' + j + ' Data'));
+                var data = JSON.parse(blockData);
+            Chain.addBlock(new Block.Block (data));
             if (--i) theLoop(i);
             });
         }, 100);

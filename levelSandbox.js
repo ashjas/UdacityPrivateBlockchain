@@ -4,37 +4,13 @@
 
 const level = require('level');
 const chainDB = './chaindata';
-var hex2ascii = require('hex2ascii');
 const db = level(chainDB);
-
-function isASCII(str) {
-    return /^[\x00-\x7F]*$/.test(str);
-}
-
-function ascii_to_hex(str) {
-    var arr1 = [];
-    for (var n = 0, l = str.length; n < l; n++) {
-        var hex = Number(str.charCodeAt(n)).toString(16);
-        arr1.push(hex);
-    }
-    return arr1.join('');
-}
 
 module.exports = {
     // Add data to levelDB with key/value pair
     addChainData : function addChainData(key,value){
         return new Promise(function (resolve,reject) {
             console.log('going to put..');
-            if (value !== undefined) {
-                //var jsonData = JSON.parse(value);
-                //console.log('test: ' + /^[0-9A-F]$/i.test(jsonData.body.star.story));
-                // if (isASCII(hex2ascii(jsonData.body.star.story)) == false || true) {// if story was not in hex,put in hex form
-                //     jsonData.body.star.story = ascii_to_hex(jsonData.body.star.story);
-                //     //jsonData.body.star.story = hex2ascii(jsonData.body.star.story);
-                //     value = JSON.stringify(jsonData);
-                //     console.log('hex converted story:' +value);
-                // }
-            }
             db.put(key, value, function(err) {
                 if (err) {
                     console.log('Block ' + key + ' submission failed');
@@ -49,22 +25,16 @@ module.exports = {
     },
 
     // Get data from levelDB with key
-    getChainData : function getChainData(key){
-        return new Promise(function (resolve,reject) {
+    getChainData: function getChainData(key) {
+        return new Promise(function (resolve, reject) {
             db.get(key, function (err, value) {
                 if (err) //return console.log('Not found!', err);
                     reject(err);
                 //console.log('key: ' + key + ' Value = ' + value);
-                if (value !== undefined) {// fix exception with http://localhost:8000/block/hash:047bac0fe15caaaea052f0d86e586f616fdc211371147f84eea3e68b807b9b45
-                    var jsonData = JSON.parse(value);
-                    if (jsonData.body.star !== undefined && isASCII(hex2ascii(jsonData.body.star.story))) {
-                        jsonData.body.star.story = hex2ascii(jsonData.body.star.story);
-                    }
-                    resolve(jsonData);
-                }
+                resolve(value);
             })
-        });
-    },
+    });
+},
 
     // Get data from levelDB with block's hash
     getChainDataByHash : function getChainDataByHash(hash){
@@ -73,11 +43,7 @@ module.exports = {
                 let json = JSON.parse(data.value);
                 if(json['hash'] == hash)
                 {
-                    var jsonData = JSON.parse(data.value);
-                    if (jsonData.body.star !== undefined && isASCII(hex2ascii(jsonData.body.star.story))) {
-                        jsonData.body.star.story = hex2ascii(jsonData.body.star.story);
-                    }
-                    resolve(jsonData);
+                    resolve(data.value);
                 }
             }).on('error', function(err) {
                 return console.log('Unable to read data stream!', err)
@@ -96,9 +62,6 @@ module.exports = {
                 if(json['body']['address'] == walletAddress)
                 {
                     var jsonData = JSON.parse(data.value);
-                    if (jsonData.body.star !== undefined && isASCII(hex2ascii(jsonData.body.star.story))) {
-                        jsonData.body.star.story = hex2ascii(jsonData.body.star.story);
-                    }
                     blockArray.push(jsonData);
                 }
             }).on('error', function(err) {
