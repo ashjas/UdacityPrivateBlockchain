@@ -39,7 +39,7 @@ class Blockchain{
         })
     }
 
-    /*Get all Blocks by walletAddress.*/
+    /*Get all Blocks by address.*/
     getBlockByAddress(walletAddress){
         return new Promise(function(resolve,reject){// on resolve
             level.getChainDataByAddress(walletAddress).then( value => {

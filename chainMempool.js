@@ -49,8 +49,8 @@ class MemPool {
         if (alreadyAuthorized == false) {
             response = {
                 address: req.address,
-                message: req.message,
                 requestTimestamp: req.timeStamp,
+                message: req.message,
                 validationWindow: obj.getValidationWIndow(req.timeStamp)
             };
         }
@@ -79,33 +79,37 @@ class MemPool {
         var idx = 0;
         var obj = this;
         var found = this.memPool.some(function (element) {
-            if (element.address == msg.walletAddress && element.authorized) {
+            if (element.address == msg.address && element.authorized) {
                 response = {
                     message: 'You are already authorized to register a star, skipping signature verification.'
                 };
                 return true;
             }
-            else if (element.address == msg.walletAddress) {
+            else if (element.address == msg.address) {
                 if (!obj.isValidationWindowExpired(element.timeStamp)) {//within validation window.
-                    if (bitcoinMessage.verify(element.message, msg.walletAddress, msg.signature)) {
+                    if (bitcoinMessage.verify(element.message, msg.address, msg.signature)) {
                         element.authorized = true;
                         response = {
-                            registerStar : true,
-                            address : element.address,
-                            requestTimestamp: element.timeStamp,
-                            message: element.message,
-                            validationWindow: obj.getValidationWIndow(element.timeStamp),
-                            messageSignature : 'valid'
+                            registerStar: true,
+                            status: {
+                                address: element.address,
+                                requestTimestamp: element.timeStamp,
+                                message: element.message,
+                                validationWindow: obj.getValidationWIndow(element.timeStamp),
+                                messageSignature: 'valid'
+                            }
                         };
                     }
                     else {
                         response = {
-                            registerStar : false,
-                            address : element.address,
-                            requestTimestamp: element.timeStamp,
-                            message: element.message,
-                            validationWindow: obj.getValidationWIndow(element.timeStamp),
-                            messageSignature : 'invalid'
+                            registerStar: false,
+                            status: {
+                                address: element.address,
+                                requestTimestamp: element.timeStamp,
+                                message: element.message,
+                                validationWindow: obj.getValidationWIndow(element.timeStamp),
+                                messageSignature: 'invalid'
+                            }
                         };
                     }
                 }
@@ -115,12 +119,14 @@ class MemPool {
                         message: 'Validation window expired, add another request to mempool before verification.'
                     };
                     response = {
-                        registerStar : false,
-                        address : element.address,
-                        requestTimestamp: element.timeStamp,
-                        message: element.message,
-                        validationWindow: 'expired',
-                        messageSignature : 'validation skipped due to window expiry'
+                        registerStar: false,
+                        status: {
+                            address: element.address,
+                            requestTimestamp: element.timeStamp,
+                            message: element.message,
+                            validationWindow: 'expired',
+                            messageSignature: 'validation skipped due to window expiry'
+                        }
                     };
                 }
                 return true;

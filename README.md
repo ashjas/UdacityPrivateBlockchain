@@ -65,7 +65,7 @@ functions from the test.js script as needed to test the blockchain.
 
 ## Testing REST methods
 
-This project supports REST methods to query a block(s) given a height/hash/walletAddress
+This project supports REST methods to query a block(s) given a height/hash/address
 and adding a blocks to the Blockchain with star registry data.
 
 ### Available Endpoints
@@ -80,7 +80,7 @@ http://localhost:8000/block/4
 ```
 http://localhost:8000/stars/hash:{hash}
 ```
-##### Get all blocks added by a specific walletAddress
+##### Get all blocks added by a specific address
 ```
 http://localhost:8000/stars/address:{address}
 ```
@@ -94,7 +94,7 @@ http://localhost:8000/requestValidation
 ###### Parameters
 ```
 {
-    "walletAddress":"1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf"
+    "address":"1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf"
 }
 ```
 ###### Output
@@ -116,7 +116,7 @@ Use the "message" field value from the output of /requestValidation POST query, 
 the "signature" field parameter of this POST request.
 ```
 {
-    "walletAddress" : "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
+    "address" : "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
 	"message"       : "1EsirC7HcF9geJzGLyrfX2zTQh6T2ZJ5FH:1543663627:starRegistry",
 	"signature"     : "H3ZNELL1MxsnmzVYMeBy5t87Ka6ZmpGO82+4Cf/QMjGQWs8EWuehc0Gwj6fuki/8pa8Vhs6Rm9jpPZR5wdmXIyY="
 }
@@ -139,7 +139,7 @@ http://localhost:8000/block
 ```
 {
     "body": {
-    "walletAddress": "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
+    "address": "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
     "star": {
       "ra": "1h 29m 1.0s",
       "dec": "-36° 19' 27.9",
@@ -165,7 +165,7 @@ The above command fetches the block at height 14 for example.
 http://localhost:8000/requestValidation
 body parameter format:
 {
-    "walletAddress":"1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf"
+    "address":"1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf"
 }
 ````
 4: Verify the signature:
@@ -173,7 +173,7 @@ body parameter format:
 http://localhost:8000/message-signature/validate
 body parameter format:
 {
-    "walletAddress" : "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
+    "address" : "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
 	"message"       : "1EsirC7HcF9geJzGLyrfX2zTQh6T2ZJ5FH:1543663627:starRegistry",
 	"signature"     : "H3ZNELL1MxsnmzVYMeBy5t87Ka6ZmpGO82+4Cf/QMjGQWs8EWuehc0Gwj6fuki/8pa8Vhs6Rm9jpPZR5wdmXIyY="
 }
@@ -184,7 +184,7 @@ http://localhost:8000/block
 body parameter format:
 {
     "body": {
-    "walletAddress": "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
+    "address": "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
     "star": {
       "ra": "1h 29m 1.0s",
       "dec": "-36° 19' 27.9",

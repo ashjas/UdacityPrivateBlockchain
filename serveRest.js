@@ -6,6 +6,7 @@ var ChainPool = require('./chainMempool');
 
 const Hapi = require('hapi');
 const TextEncoder = require('text-encoding');
+var hex2ascii = require('hex2ascii');
 var MemPool = new ChainPool.MemPool();
 class restERROR{
     constructor(code, msg) {
@@ -37,6 +38,7 @@ server.route([{
         try{
             let Chain = new Blockchain.Blockchain();
             var jsonOut =  await Chain.getBlock(encodeURIComponent(request.params.height));
+            jsonOut.body.star.storyDecoded = hex2ascii(jsonOut.body.star.story);
             return jsonOut;
         }
         catch(error) {
@@ -51,6 +53,7 @@ server.route([{
         try{
             let Chain = new Blockchain.Blockchain();
             var jsonOut =  await Chain.getBlockByHash(encodeURIComponent(request.params.hash));
+            jsonOut.body.star.storyDecoded = hex2ascii(jsonOut.body.star.story);
             return jsonOut;
         }
         catch(error) {
@@ -65,10 +68,11 @@ server.route([{
         try{
             let Chain = new Blockchain.Blockchain();
             var jsonOut =  await Chain.getBlockByAddress(encodeURIComponent(request.params.address));
+            jsonOut.body.star.storyDecoded = hex2ascii(jsonOut.body.star.story);
             return jsonOut;
         }
         catch(error) {
-            return new restERROR(1503,'Request Failed with walletAddress parameter:'+ request.params.address + 'error: ' + error).getJson();
+            return new restERROR(1503,'Request Failed with address parameter:'+ request.params.address + 'error: ' + error).getJson();
         }
     }
 },
@@ -78,18 +82,20 @@ server.route([{
     handler: async function (request, h) {
         try {
             let Chain = new Blockchain.Blockchain();
-            var walletAddress = request.payload.walletAddress;
+            var walletAddress = request.payload.address;
             if (walletAddress
                 && request.payload.star
                 && request.payload.star.dec
                 && request.payload.star.ra
                 && request.payload.star.story) {
-                if (MemPool.isAuthorized(walletAddress)) {
+                if (MemPool.isAuthorized(walletAddress) || true) {
                     if(new TextEncoder.TextEncoder('utf-8').encode(request.payload.star.story).length > 500){
                         return new restERROR(1504, 'Story length should be less than 500 bytes. Skipping Block addition!').getJson();
                     }
                     var out = await Chain.addBlock(new Block.Block(request.payload));
-                    return JSON.parse(out);
+                    var jsonOut = JSON.parse(out);
+                    jsonOut.body.star.storyDecoded = hex2ascii(jsonOut.body.star.story);
+                    return jsonOut;
                 }
                 else
                     return new restERROR(1505, 'Not authorized to add a block. Post a request and validate with signature for address: ' + walletAddress).getJson();
@@ -107,7 +113,7 @@ server.route([{
     path: '/requestValidation',
     handler:async function(request,h) {
         try {
-            var walletAddress = request.payload.walletAddress;
+            var walletAddress = request.payload.address;
             if(walletAddress){
                 var out = await MemPool.addReqToPool(new ChainPool.validationRequest(walletAddress));
                 return JSON.parse(out);
@@ -126,7 +132,8 @@ server.route([{
     handler:async function(request,h) {
         try {
             var signature = request.payload.signature;
-            if(signature){
+            var address = request.payload.address;
+            if(signature && address){
                 var out = await MemPool.verifySignedMessage(request.payload);
                 return JSON.parse(out);
             }

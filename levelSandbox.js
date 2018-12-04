@@ -11,11 +11,30 @@ function isASCII(str) {
     return /^[\x00-\x7F]*$/.test(str);
 }
 
+function ascii_to_hex(str) {
+    var arr1 = [];
+    for (var n = 0, l = str.length; n < l; n++) {
+        var hex = Number(str.charCodeAt(n)).toString(16);
+        arr1.push(hex);
+    }
+    return arr1.join('');
+}
+
 module.exports = {
     // Add data to levelDB with key/value pair
     addChainData : function addChainData(key,value){
         return new Promise(function (resolve,reject) {
             console.log('going to put..');
+            if (value !== undefined) {
+                //var jsonData = JSON.parse(value);
+                //console.log('test: ' + /^[0-9A-F]$/i.test(jsonData.body.star.story));
+                // if (isASCII(hex2ascii(jsonData.body.star.story)) == false || true) {// if story was not in hex,put in hex form
+                //     jsonData.body.star.story = ascii_to_hex(jsonData.body.star.story);
+                //     //jsonData.body.star.story = hex2ascii(jsonData.body.star.story);
+                //     value = JSON.stringify(jsonData);
+                //     console.log('hex converted story:' +value);
+                // }
+            }
             db.put(key, value, function(err) {
                 if (err) {
                     console.log('Block ' + key + ' submission failed');
@@ -74,7 +93,7 @@ module.exports = {
             var blockArray = new Array();
             db.createReadStream().on('data', function(data) {
                 let json = JSON.parse(data.value);
-                if(json['body']['walletAddress'] == walletAddress)
+                if(json['body']['address'] == walletAddress)
                 {
                     var jsonData = JSON.parse(data.value);
                     if (jsonData.body.star !== undefined && isASCII(hex2ascii(jsonData.body.star.story))) {
