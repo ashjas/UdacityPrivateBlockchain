@@ -76,7 +76,7 @@ function validateChain(){
 }
 
 // Calls for running tests..
-populateChainWithBlocks(5);
-//printChain();
+//populateChainWithBlocks(5);
+printChain();
 //validateChain();
 //induceErrorInChain();

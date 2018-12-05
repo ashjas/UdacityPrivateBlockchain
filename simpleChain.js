@@ -68,7 +68,7 @@ class Blockchain{
                     level.addDataToChain(JSON.stringify(genesisBlock).toString()).then(() => {
                         // Add the newBlock
                         obj.getBlock(0).then(value => {// for getting the genesis block hash
-                            var json = value;
+                            var json = JSON.parse(value);
                             console.log('json for getting previous hash:' + json['hash']);
                             newBlock.previousBlockHash = json['hash'];
                             newBlock.height = json['height'] + 1;
@@ -82,7 +82,7 @@ class Blockchain{
                         }).catch((error) => { console.log('Exception in addBlock:' + error);});
                     }).catch((error) => { console.log('Exception in Genesis addBlock:' + error);});
                 }
-                else {
+                else {//chain existing.
                     // Add the newBlock
                     newBlock.height = height + 1;// block height is the block # at which its added.
                     obj.getBlock(height).then( value => {// for getting the previous block hash.
