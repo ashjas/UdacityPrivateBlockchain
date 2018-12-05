@@ -103,7 +103,7 @@ http://localhost:8000/requestValidation
     "address": "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf",
     "message": "1PUCpJWqEFpEc8oH8P9dARBbN5aGLVbNPf:1543757535:starRegistry",
     "requestTimestamp": "1543757535",
-    "validationWindow": 60
+    "validationWindow": 300
 }
 ```
 
